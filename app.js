@@ -7,25 +7,25 @@
 (function() {
     'use strict';
 
-    const STORAGE_KEY = 'AO_PHILOSOPHIE_ORGANIZER_STATE_V5';
+    const STORAGE_KEY = 'AO_PHILOSOPHIE_ORGANIZER_STATE_V6';
 
-    // Feste Ausgangs-Slots (3 links, 3 rechts) für eine unvoreingenommene, gemischte Verteilung
+    // Feste Ausgangs-Slots (3 links, 3 rechts) – perfekt zentriert unter den beiden Polen
     const START_SLOTS = [
-        { x: 200, y: 220 }, // Links Oben
-        { x: 920, y: 220 }, // Rechts Oben
-        { x: 200, y: 460 }, // Links Mitte
-        { x: 920, y: 460 }, // Rechts Mitte
-        { x: 200, y: 700 }, // Links Unten
-        { x: 920, y: 700 }  // Rechts Unten
+        { x: 360, y: 220 }, // Links Oben
+        { x: 1080, y: 220 }, // Rechts Oben
+        { x: 360, y: 460 }, // Links Mitte
+        { x: 1080, y: 460 }, // Rechts Mitte
+        { x: 360, y: 700 }, // Links Unten
+        { x: 1080, y: 700 }  // Rechts Unten
     ];
 
     const INITIAL_STATE = {
         zoom: 1,
         nodes: [
-            // Feste Referenzknoten (Dach & Pole)
-            { id: 'header', fixed: true, type: 'header', x: 50, y: 24, w: 1380, h: 70 },
-            { id: 'pole-left', fixed: true, type: 'pole', x: 50, y: 114, w: 660, h: 56, title: 'DIE VISITENKARTE' },
-            { id: 'pole-right', fixed: true, type: 'pole', x: 770, y: 114, w: 660, h: 56, title: 'DAS TRUGBILD' },
+            // Feste Referenzknoten (Dach & Pole) – zentriert auf dem 1800px Board (210px Außenabstand)
+            { id: 'header', fixed: true, type: 'header', x: 210, y: 24, w: 1380, h: 70 },
+            { id: 'pole-left', fixed: true, type: 'pole', x: 210, y: 114, w: 660, h: 56, title: 'DIE VISITENKARTE' },
+            { id: 'pole-right', fixed: true, type: 'pole', x: 930, y: 114, w: 660, h: 56, title: 'DAS TRUGBILD' },
             
             // Bewegliche Denker-Stationen (zufällig links/rechts verteilt, ohne Vorfestlegung auf Pole)
             { 
@@ -36,7 +36,7 @@
                 concept: 'Kapitalistischer Realismus',
                 img: 'assets/fisher.jpeg',
                 insight: '',
-                x: 200, 
+                x: 360, 
                 y: 220, 
                 w: 360, 
                 h: 175 
@@ -49,7 +49,7 @@
                 concept: 'Mängelwesen & Institutionen',
                 img: 'assets/gehlen.jpeg',
                 insight: '',
-                x: 920, 
+                x: 1080, 
                 y: 220, 
                 w: 360, 
                 h: 175 
@@ -62,7 +62,7 @@
                 concept: 'Naturzustand & Entfremdung',
                 img: 'assets/rousseau.jpeg',
                 insight: '',
-                x: 200, 
+                x: 360, 
                 y: 460, 
                 w: 360, 
                 h: 175 
@@ -75,7 +75,7 @@
                 concept: 'Aneignung & Lebensformen',
                 img: 'assets/jaeggi.jpg',
                 insight: '',
-                x: 920, 
+                x: 1080, 
                 y: 460, 
                 w: 360, 
                 h: 175 
@@ -88,7 +88,7 @@
                 concept: 'Warenform & Entfremdung',
                 img: 'assets/marx.png',
                 insight: '',
-                x: 200, 
+                x: 360, 
                 y: 700, 
                 w: 360, 
                 h: 175 
@@ -101,7 +101,7 @@
                 concept: 'Das Unbehagen in der Kultur',
                 img: 'assets/freud.jpg',
                 insight: '',
-                x: 920, 
+                x: 1080, 
                 y: 700, 
                 w: 360, 
                 h: 175 
@@ -256,13 +256,27 @@
                 window.scrollTo(0, 0);
             }
         }, { passive: true });
+
+        // Initialansicht anpassen: Auf kleineren Bildschirmen (iPad etc.) oder beim ersten Aufruf
+        if (!hasLoaded || !state.zoom || state.zoom === 1) {
+            fitCanvasToScreen();
+        } else {
+            applyZoom();
+        }
+
+        // Bei Drehung des iPads (Orientation Change) passend einpassen
+        window.addEventListener('resize', () => {
+            if (!state.zoom || state.zoom < 0.9) {
+                fitCanvasToScreen();
+            }
+        });
     }
 
     // --- STORAGE & PERSISTENZ (AUTOMATISCHES SPEICHERN ÜBER WOCHEN) ---
     function saveToStorage() {
         try {
             const data = {
-                version: 3,
+                version: 4,
                 updatedAt: new Date().toISOString(),
                 state: state
             };
@@ -276,7 +290,38 @@
 
     function loadFromStorage() {
         try {
-            const raw = localStorage.getItem(STORAGE_KEY);
+            let raw = localStorage.getItem(STORAGE_KEY);
+            // Automatische sanfte Migration aus V5 falls V6 noch nicht existiert
+            if (!raw) {
+                const oldRaw = localStorage.getItem('AO_PHILOSOPHIE_ORGANIZER_STATE_V5');
+                if (oldRaw) {
+                    const parsedOld = JSON.parse(oldRaw);
+                    if (parsedOld && parsedOld.state) {
+                        state = parsedOld.state;
+                        // Zentriere ältere Stände (+160px X-Verschiebung wenn Header noch auf x=50 war)
+                        const headerNode = state.nodes.find(n => n.id === 'header');
+                        if (headerNode && headerNode.x < 100) {
+                            const shiftX = 210 - headerNode.x;
+                            state.nodes.forEach(n => { n.x += shiftX; });
+                            if (state.annotations) {
+                                state.annotations.forEach(a => { a.x += shiftX; });
+                            }
+                            if (state.drawings) {
+                                state.drawings.forEach(s => {
+                                    if (s.points) {
+                                        s.points.forEach(p => { p.x += shiftX; });
+                                    }
+                                });
+                            }
+                        }
+                        if (!state.annotations) state.annotations = [];
+                        if (!state.drawings) state.drawings = [];
+                        saveToStorage();
+                        return true;
+                    }
+                }
+            }
+
             if (raw) {
                 const parsed = JSON.parse(raw);
                 if (parsed && parsed.state) {
@@ -495,9 +540,9 @@
             let newX = Math.round(origNodeX + dx);
             let newY = Math.round(origNodeY + dy);
 
-            // Canvas Bounds (3200x2400)
-            newX = Math.max(10, Math.min(3200 - (dataObj.w || 40), newX));
-            newY = Math.max(10, Math.min(2400 - (dataObj.h || 40), newY));
+            // Canvas Bounds (1800x2200)
+            newX = Math.max(10, Math.min(1800 - (dataObj.w || 40), newX));
+            newY = Math.max(10, Math.min(2200 - (dataObj.h || 40), newY));
 
             dataObj.x = newX;
             dataObj.y = newY;
@@ -1320,6 +1365,77 @@
                 if (e.touches.length < 2) finishPinch();
             });
             canvasViewport.addEventListener('touchcancel', finishPinch);
+
+            // 1-Finger Pan auf freiem Hintergrund (iPad)
+            let isSingleFingerPanning = false;
+            let panStartX = 0;
+            let panStartY = 0;
+            let panScrollLeft = 0;
+            let panScrollTop = 0;
+
+            canvasViewport.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    if (e.target.closest('.thinker-card, .note-card, .question-marker, .tool-btn, .btn, .roof-card, .pole-card, input, textarea, button, .instruction-close-btn, .workspace-toolbar, .pen-subtoolbar, .modal-backdrop')) {
+                        return;
+                    }
+                    if (activeTool === 'pen') return;
+
+                    isSingleFingerPanning = true;
+                    panStartX = e.touches[0].clientX;
+                    panStartY = e.touches[0].clientY;
+                    panScrollLeft = canvasViewport.scrollLeft;
+                    panScrollTop = canvasViewport.scrollTop;
+                }
+            }, { passive: true });
+
+            canvasViewport.addEventListener('touchmove', (e) => {
+                if (isSingleFingerPanning && e.touches.length === 1) {
+                    const dx = e.touches[0].clientX - panStartX;
+                    const dy = e.touches[0].clientY - panStartY;
+                    canvasViewport.scrollLeft = panScrollLeft - dx;
+                    canvasViewport.scrollTop = panScrollTop - dy;
+                    if (e.cancelable) e.preventDefault();
+                }
+            }, { passive: false });
+
+            const stopSinglePan = () => { isSingleFingerPanning = false; };
+            canvasViewport.addEventListener('touchend', stopSinglePan, { passive: true });
+            canvasViewport.addEventListener('touchcancel', stopSinglePan, { passive: true });
+
+            // Maus-Drag Pan auf freiem Hintergrund (Desktop)
+            let isMousePanning = false;
+            let mouseStartX = 0;
+            let mouseStartY = 0;
+            let mouseScrollLeft = 0;
+            let mouseScrollTop = 0;
+
+            canvasViewport.addEventListener('mousedown', (e) => {
+                if (activeTool !== 'select') return;
+                if (e.target.closest('.thinker-card, .note-card, .question-marker, .tool-btn, .btn, .roof-card, .pole-card, input, textarea, button, .instruction-close-btn, .workspace-toolbar, .pen-subtoolbar, .modal-backdrop')) {
+                    return;
+                }
+                isMousePanning = true;
+                mouseStartX = e.clientX;
+                mouseStartY = e.clientY;
+                mouseScrollLeft = canvasViewport.scrollLeft;
+                mouseScrollTop = canvasViewport.scrollTop;
+                canvasViewport.style.cursor = 'grabbing';
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isMousePanning) return;
+                const dx = e.clientX - mouseStartX;
+                const dy = e.clientY - mouseStartY;
+                canvasViewport.scrollLeft = mouseScrollLeft - dx;
+                canvasViewport.scrollTop = mouseScrollTop - dy;
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (isMousePanning) {
+                    isMousePanning = false;
+                    canvasViewport.style.cursor = 'default';
+                }
+            });
         }
     }
 
@@ -1340,12 +1456,15 @@
     }
 
     function fitCanvasToScreen() {
-        const availWidth = canvasViewport.clientWidth - 60;
-        const availHeight = canvasViewport.clientHeight - 60;
-        const scaleX = availWidth / 1480;
+        if (!canvasViewport) return;
+        const availWidth = canvasViewport.clientWidth - 120;
+        const availHeight = canvasViewport.clientHeight - 80;
+        const scaleX = availWidth / 1800;
         const scaleY = availHeight / 1100;
         const fitScale = Math.min(scaleX, scaleY, 1.0);
         setZoom(fitScale);
+        canvasViewport.scrollLeft = 0;
+        canvasViewport.scrollTop = 0;
     }
 
     // --- MODALS (NOTIZEN & BESCHRIFTUNG) ---
