@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+    <title>Advanced Organizer: Golden Record – Visitenkarte oder Trugbild?</title>
+    <!-- Google Fonts: Carlito (Calibri-kompatibel, LRS-freundlich), Inter & EB Garamond für philosophische Eleganz -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700;1,400;1,700&family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="light-mode">
+    <div class="app-layout">
+        <!-- Top Application Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <span class="badge">Philosophie Q1</span>
+                <span class="instructor">Herr Dayi</span>
+                <span class="topic-tag">Anthropologie &amp; Kulturkritik</span>
+            </div>
+
+            <div class="header-center">
+                <h1 class="main-title">Digitaler Advanced Organizer</h1>
+            </div>
+
+            <div class="header-right">
+                <!-- Save Status Indicator -->
+                <div class="save-status" id="saveStatus" title="Änderungen werden automatisch im Browser gespeichert">
+                    <span class="save-dot"></span>
+                    <span class="save-label" id="saveText">Automatisch gespeichert</span>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Export & Persistence Actions -->
+                <button id="btnExportJson" class="btn btn-secondary" title="Arbeitsstand als Datei sichern (z. B. für Schul-PC oder iPad)">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span>Stand sichern</span>
+                </button>
+
+                <label for="importJsonFile" class="btn btn-secondary" title="Gespeicherten Stand von Datei laden">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <span>Stand laden</span>
+                </label>
+                <input type="file" id="importJsonFile" accept=".json" style="display: none;">
+
+                <button id="btnExportImage" class="btn btn-secondary" title="Als Bild (PNG) für Portfolio oder Lehrkraft speichern">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    <span>Bild exportieren</span>
+                </button>
+
+                <button id="btnShuffle" class="btn btn-secondary" title="Die Denker-Stationen zufällig auf die linke und rechte Seite verteilen">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+                    <span>Mischen 🔀</span>
+                </button>
+
+                <button id="btnReset" class="btn btn-ghost" title="Auf den ursprünglichen Zustand zurücksetzen">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                    <span>Zurücksetzen</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Interactive Floating / Fixed Workspace Toolbar (iPad optimiert) -->
+        <aside class="workspace-toolbar" id="toolbar" aria-label="Werkzeuge">
+            <div class="tool-group">
+                <button class="tool-btn active" data-tool="select" title="Auswählen &amp; Verschieben (Taste V)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 7 18 3-7 7-3L3 3z"></path></svg>
+                    <span class="tool-caption">Bewegen</span>
+                </button>
+
+                <button class="tool-btn" data-tool="pen" id="toolBtnPen" title="Stift / Apple Pencil: Freihand zeichnen &amp; schreiben (Taste P)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+                    <span class="tool-caption">Stift ✏️</span>
+                </button>
+
+                <button class="tool-btn" data-tool="arrow" title="Verbindungspfeil: Klicke auf Start- und Zielkarte (Taste A)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    <span class="tool-caption">Pfeil</span>
+                </button>
+
+                <button class="tool-btn" data-tool="conflict" title="Dialektischer Bruch / Blitz: Widerspruch markieren (Taste B)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    <span class="tool-caption">Blitz</span>
+                </button>
+
+                <button class="tool-btn" data-tool="question" title="Fragezeichen / Reflexionsmarkierung (Taste Q)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <span class="tool-caption">Frage ?</span>
+                </button>
+
+                <button class="tool-btn" data-tool="note" title="Eigene Notiz / Kärtchen platzieren (Taste N)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span class="tool-caption">Notiz</span>
+                </button>
+
+                <button class="tool-btn danger" data-tool="delete" title="Lösch-Modus: Elemente oder Linien entfernen (Taste D)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                    <span class="tool-caption">Löschen</span>
+                </button>
+            </div>
+
+            <div class="tool-divider"></div>
+
+            <div class="zoom-controls">
+                <button id="btnZoomIn" class="icon-small-btn" title="Vergrößern">+</button>
+                <span id="zoomLevelText">100%</span>
+                <button id="btnZoomOut" class="icon-small-btn" title="Verkleinern">−</button>
+                <button id="btnZoomFit" class="icon-small-btn" title="Gesamtansicht">Fit</button>
+            </div>
+        </aside>
+
+        <!-- Stift / Apple Pencil Unter-Leiste (erscheint bei aktivem Stift) -->
+        <div class="pen-subtoolbar" id="penSubtoolbar" style="display: none;">
+            <div class="pen-opt-group">
+                <button id="btnPenDrawMode" class="btn btn-secondary btn-sm active" title="Stift: Freihand zeichnen &amp; schreiben">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg>
+                    <span>Stift ✏️</span>
+                </button>
+                <button id="btnPenEraserMode" class="btn btn-secondary btn-sm" title="Radierer: Zeichnungen durch Berühren oder Überstreichen wegradieren">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 17.5l6-6 6.5 6.5-6 6a2 2 0 0 1-2.83 0l-3.67-3.67a2 2 0 0 1 0-2.83z"></path><path d="M15 5l4 4-6 6-4-4 6-6z"></path><line x1="2" y1="22" x2="22" y2="22"></line></svg>
+                    <span>Radierer 🧹</span>
+                </button>
+            </div>
+            <div class="pen-divider"></div>
+            <div class="pen-opt-group" id="penColorGroup">
+                <span class="pen-label">Farbe:</span>
+                <button class="pen-color-btn active" data-color="#143264" style="background: #143264;" title="Blau"></button>
+                <button class="pen-color-btn" data-color="#d75f0a" style="background: #d75f0a;" title="Orange / Konflikt"></button>
+                <button class="pen-color-btn" data-color="#dc2626" style="background: #dc2626;" title="Rot"></button>
+                <button class="pen-color-btn" data-color="#16a34a" style="background: #16a34a;" title="Grün"></button>
+                <button class="pen-color-btn" data-color="#0f172a" style="background: #0f172a;" title="Schwarz"></button>
+            </div>
+            <div class="pen-divider"></div>
+            <div class="pen-opt-group" id="penSizeGroup">
+                <span class="pen-label">Stärke:</span>
+                <button class="pen-size-btn active" data-size="2" title="Fein (2px)">• Fein</button>
+                <button class="pen-size-btn" data-size="4" title="Mittel (4px)">● Mittel</button>
+            </div>
+            <div class="pen-divider"></div>
+            <div class="pen-opt-group">
+                <button id="btnUndoDrawing" class="btn btn-secondary btn-sm" title="Letzten Schritt rückgängig machen">
+                    ↩ Rückgängig
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Canvas Viewport -->
+        <main class="canvas-viewport" id="canvasViewport">
+            <!-- Hint Bar for Current Tool Interaction -->
+            <div class="canvas-instruction" id="canvasInstruction">
+                <span class="instruction-icon">💡</span>
+                <span id="instructionText">Verschiebe Stationen frei per Drag &amp; Drop und verbinde sie im Verlauf der Reihe eigenständig mit Pfeilen (A), Blitzen (B) oder dem Stift (P).</span>
+            </div>
+
+            <!-- The Scalable / Movable Canvas Board (1480px x 1100px) -->
+            <div class="canvas-board" id="canvasBoard">
+                <!-- SVG Layer for Dynamic Connections & Arrows -->
+                <svg class="connections-layer" id="svgConnections" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- Standard Arrowhead (Primary Blue) -->
+                        <marker id="arrowhead-blue" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+                            <polygon points="0 0, 9 3.5, 0 7" fill="#143264" />
+                        </marker>
+                        <!-- Orange Conflict Arrowhead Start -->
+                        <marker id="arrowhead-orange-start" markerWidth="9" markerHeight="7" refX="1" refY="3.5" orient="auto-start-reverse">
+                            <polygon points="9 0, 0 3.5, 9 7" fill="#d75f0a" />
+                        </marker>
+                        <!-- Orange Conflict Arrowhead End -->
+                        <marker id="arrowhead-orange-end" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+                            <polygon points="0 0, 9 3.5, 0 7" fill="#d75f0a" />
+                        </marker>
+                    </defs>
+
+                    <!-- Rendered Path Elements injected by app.js -->
+                    <g id="svgLinksGroup"></g>
+                    <!-- Temporary Drawing Line -->
+                    <path id="svgDragLine" class="drag-link-preview" d="" style="display: none;"></path>
+                </svg>
+
+                <!-- Freihand-Zeichenfläche für Apple Pencil / Stift-Nutzung auf dem iPad -->
+                <canvas class="drawings-layer" id="drawingsCanvas" width="1480" height="1100"></canvas>
+
+                <!-- HTML Nodes Layer -->
+                <div class="nodes-layer" id="nodesLayer">
+                    <!-- 1. FIXED HEADER / ROOF -->
+                    <div class="roof-card fixed-node" id="node-header" data-id="header">
+                        <div class="roof-title-content">
+                            <h2 class="roof-question">Golden Record: Visitenkarte oder Trugbild der menschlichen Kultur?</h2>
+                            <p class="roof-subtitle">Zentraler Advanced Organizer zur Unterrichtsreihe Anthropologie &amp; Kulturphilosophie</p>
+                        </div>
+                        <div class="roof-record-wrapper">
+                            <div class="record-disc" title="Voyager Golden Record (1977)">
+                                <img src="assets/goldenrecord.jpg" alt="Voyager Golden Record" class="record-img">
+                            </div>
+                            <span class="record-year">1977</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. FIXED POLES (Die beiden anthropologischen Pole ohne Pol A / Pol B) -->
+                    <!-- Visitenkarte - Links -->
+                    <div class="pole-card fixed-node pole-left" id="node-pole-left" data-id="pole-left">
+                        <div class="pole-inner">
+                            <h3 class="pole-title">DIE VISITENKARTE</h3>
+                        </div>
+                    </div>
+
+                    <!-- Trugbild - Rechts -->
+                    <div class="pole-card fixed-node pole-right" id="node-pole-right" data-id="pole-right">
+                        <div class="pole-inner">
+                            <h3 class="pole-title">DAS TRUGBILD</h3>
+                        </div>
+                    </div>
+
+                    <!-- 3. THINKER CARDS & ANNOTATIONS ARE CREATED & MANAGED DYNAMICALLY BY APP.JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Note Editing / Creating -->
+    <div class="modal-backdrop" id="noteModal">
+        <div class="modal-dialog">
+            <h3 class="modal-title" id="noteModalTitle">Notiz bearbeiten</h3>
+            <div class="modal-body">
+                <label for="noteInputText" class="modal-label">Inhalt / Kerngedanke:</label>
+                <textarea id="noteInputText" class="modal-textarea" rows="4" placeholder="Schreibe hier deine These, Begründung oder Beobachtung..."></textarea>
+                
+                <label class="modal-label" style="margin-top: 14px;">Farbe:</label>
+                <div class="color-picker-row">
+                    <button type="button" class="color-dot active" data-color="yellow" style="background: #fef9c3; border-color: #facc15;" title="Gelb"></button>
+                    <button type="button" class="color-dot" data-color="blue" style="background: #e0f2fe; border-color: #38bdf8;" title="Blau"></button>
+                    <button type="button" class="color-dot" data-color="green" style="background: #dcfce7; border-color: #4ade80;" title="Grün"></button>
+                    <button type="button" class="color-dot" data-color="orange" style="background: #ffedd5; border-color: #fb923c;" title="Orange"></button>
+                    <button type="button" class="color-dot" data-color="purple" style="background: #f3e8ff; border-color: #c084fc;" title="Violett"></button>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost" id="btnCancelNote">Abbrechen</button>
+                <button type="button" class="btn btn-primary" id="btnSaveNote">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Connection / Conflict Labeling -->
+    <div class="modal-backdrop" id="linkModal">
+        <div class="modal-dialog">
+            <h3 class="modal-title" id="linkModalTitle">Verbindung beschriften</h3>
+            <div class="modal-body">
+                <label for="linkInputText" class="modal-label">Begriff / Erläuterung (z. B. unter dem Blitz):</label>
+                <input type="text" id="linkInputText" class="modal-input" placeholder="z. B. Dialektischer Bruch, Widerspruch, Kompensation...">
+                <p class="modal-help">Tipp: Dieser Text wird direkt unter der Verbindung oder unter dem Blitz angezeigt.</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost" id="btnCancelLink">Abbrechen</button>
+                <button type="button" class="btn btn-primary" id="btnSaveLink">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

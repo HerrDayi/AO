@@ -1,0 +1,1039 @@
+/* ==========================================================================
+   DIGITALER ADVANCED ORGANIZER – ANTHROPOLOGIE & KULTURKRITIK
+   Optimiert für Desktop & iPad (Apple Pencil Unterstützung)
+   ========================================================================== */
+
+:root {
+    --primary-blue: #143264;       /* RGB(20, 50, 100) */
+    --light-blue: #f2f6fc;         /* RGB(242, 246, 252) */
+    --conflict-orange: #d75f0a;    /* RGB(215, 95, 10) */
+    --border-gray: #b4b4b4;        /* RGB(180, 180, 180) */
+    --bg-page: #f8fafc;
+    --card-bg: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --font-serif: "EB Garamond", "Libertinus Serif", Georgia, serif;
+    --font-sans: "Inter", "Carlito", -apple-system, BlinkMacSystemFont, sans-serif;
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+    --shadow-md: 0 4px 12px rgba(20, 50, 100, 0.09);
+    --shadow-lg: 0 10px 25px -3px rgba(20, 50, 100, 0.14);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-page);
+    color: var(--text-main);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+/* --------------------------------------------------------------------------
+   App Layout: Header, Toolbar, Viewport
+   -------------------------------------------------------------------------- */
+.app-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+}
+
+/* Header */
+.app-header {
+    height: 56px;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 50;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.badge {
+    background: var(--primary-blue);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+}
+
+.instructor {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.topic-tag {
+    background: #e2e8f0;
+    color: #334155;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.header-center .main-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    letter-spacing: -0.01em;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.divider {
+    width: 1px;
+    height: 24px;
+    background: #cbd5e1;
+    margin: 0 4px;
+}
+
+/* Save Status Indicator */
+.save-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #059669;
+    background: #ecfdf5;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid #a7f3d0;
+}
+
+.save-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    animation: pulse 2.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.15); }
+}
+
+/* Buttons (Touch-optimiert für iPad mind. 38px/44px) */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: 600;
+    min-height: 36px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    touch-action: manipulation;
+}
+
+.btn-sm {
+    min-height: 30px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+}
+
+.btn-primary {
+    background: var(--primary-blue);
+    color: #ffffff;
+}
+.btn-primary:hover {
+    background: #0f254c;
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #1e293b;
+    border-color: #cbd5e1;
+}
+.btn-secondary:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+.btn-secondary.active {
+    background: var(--light-blue);
+    color: var(--primary-blue);
+    border-color: var(--primary-blue);
+    font-weight: 700;
+}
+
+.btn-ghost {
+    background: transparent;
+    color: #64748b;
+}
+.btn-ghost:hover {
+    background: #f1f5f9;
+    color: #b91c1c;
+}
+
+/* --------------------------------------------------------------------------
+   Workspace Toolbar (Left Floating Bar, iPad Touch Friendly)
+   -------------------------------------------------------------------------- */
+.workspace-toolbar {
+    position: absolute;
+    top: 70px;
+    left: 18px;
+    z-index: 45;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tool-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.tool-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 62px;
+    height: 54px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 4px 2px;
+    touch-action: manipulation;
+}
+
+.tool-caption {
+    font-size: 0.68rem;
+    font-weight: 600;
+    margin-top: 3px;
+    letter-spacing: -0.01em;
+}
+
+.tool-btn:hover {
+    background: #f1f5f9;
+    color: var(--primary-blue);
+}
+
+.tool-btn.active {
+    background: var(--light-blue);
+    color: var(--primary-blue);
+    border-color: rgba(20, 50, 100, 0.3);
+    box-shadow: inset 0 0 0 1px rgba(20, 50, 100, 0.2);
+}
+
+.tool-btn.danger:hover,
+.tool-btn.danger.active {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.tool-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 4px 2px;
+}
+
+.zoom-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.icon-small-btn {
+    width: 32px;
+    height: 28px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 4px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #475569;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+.icon-small-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+#zoomLevelText {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #64748b;
+    padding: 2px 0;
+}
+
+/* Stift / Apple Pencil Unter-Leiste */
+.pen-subtoolbar {
+    position: absolute;
+    top: 70px;
+    left: 96px;
+    z-index: 45;
+    background: #ffffff;
+    border: 1.5px solid var(--primary-blue);
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.pen-opt-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pen-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #475569;
+    margin-right: 2px;
+}
+
+.pen-color-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    cursor: pointer;
+    box-shadow: 0 0 0 1px #cbd5e1;
+    transition: transform 0.1s ease;
+    touch-action: manipulation;
+}
+.pen-color-btn:hover {
+    transform: scale(1.15);
+}
+.pen-color-btn.active {
+    box-shadow: 0 0 0 2px #0f172a;
+    transform: scale(1.15);
+}
+
+.pen-size-btn {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #334155;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+.pen-size-btn.active {
+    background: var(--light-blue);
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+}
+
+.pen-divider {
+    width: 1px;
+    height: 24px;
+    background: #e2e8f0;
+}
+
+/* --------------------------------------------------------------------------
+   Canvas Viewport & Canvas Board (1480px x 1100px)
+   -------------------------------------------------------------------------- */
+.canvas-viewport {
+    flex: 1;
+    position: relative;
+    overflow: auto;
+    background: #eef2f6;
+    background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+    background-size: 24px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.canvas-instruction {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(6px);
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #334155;
+    z-index: 30;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+    max-width: 80vw;
+    text-align: center;
+}
+
+.canvas-board {
+    position: relative;
+    width: 1480px;
+    height: 1100px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: var(--shadow-md);
+    transform-origin: center top;
+    transition: transform 0.1s ease-out;
+    border: 1px solid #e2e8f0;
+}
+
+/* SVG Connections Layer */
+.connections-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.connections-layer path,
+.connections-layer g {
+    pointer-events: visibleStroke;
+}
+
+.connection-line {
+    fill: none;
+    stroke: rgba(20, 50, 100, 0.85);
+    stroke-width: 1.8px;
+    stroke-dasharray: 5 4;
+    transition: stroke 0.15s ease, stroke-width 0.15s ease;
+    cursor: pointer;
+}
+
+.connection-line:hover {
+    stroke: #1d4ed8;
+    stroke-width: 2.8px;
+}
+
+.connection-line.conflict-line {
+    stroke: var(--conflict-orange);
+    stroke-width: 2.2px;
+    stroke-dasharray: 6 3;
+}
+.connection-line.conflict-line:hover {
+    stroke: #b45309;
+    stroke-width: 3.2px;
+}
+
+.drag-link-preview {
+    fill: none;
+    stroke: #3b82f6;
+    stroke-width: 2px;
+    stroke-dasharray: 4 4;
+}
+
+/* Conflict Lightning Badge in Center of Conflict Connection */
+.conflict-blitz-badge {
+    cursor: pointer;
+    filter: drop-shadow(0 2px 5px rgba(215, 95, 10, 0.35));
+    transition: transform 0.15s ease;
+}
+.conflict-blitz-badge:hover {
+    transform: scale(1.15);
+}
+
+/* Textlabel unter dem Blitz oder unter Pfeilen */
+.connection-label-group {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.connection-label-text {
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    font-weight: 700;
+    fill: var(--primary-blue);
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.connection-label-text.conflict-label {
+    fill: var(--conflict-orange);
+}
+
+.connection-label-bg {
+    fill: #ffffff;
+    stroke: #cbd5e1;
+    stroke-width: 1.2px;
+    rx: 5px;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.08));
+}
+
+.connection-label-bg.conflict-bg {
+    stroke: var(--conflict-orange);
+    fill: #fffaf5;
+}
+
+/* Button zur Ergänzung unter dem Blitz, wenn noch kein Text vorhanden */
+.add-label-prompt-bg {
+    fill: #fffaf5;
+    stroke: var(--conflict-orange);
+    stroke-width: 1.2px;
+    stroke-dasharray: 3 3;
+    rx: 5px;
+    cursor: pointer;
+}
+
+.add-label-prompt-text {
+    font-family: var(--font-sans);
+    font-size: 10.5px;
+    font-weight: 600;
+    fill: var(--conflict-orange);
+    text-anchor: middle;
+    dominant-baseline: central;
+    cursor: pointer;
+}
+
+/* Freihand-Zeichenfläche (Apple Pencil & Stift-Nutzung) */
+.drawings-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 15;
+    pointer-events: none;
+    touch-action: none;
+}
+
+.drawings-layer.active-pen {
+    pointer-events: auto;
+    cursor: crosshair;
+}
+
+.drawings-layer.active-eraser {
+    pointer-events: auto;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23dc2626' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 17.5l6-6 6.5 6.5-6 6a2 2 0 0 1-2.83 0l-3.67-3.67a2 2 0 0 1 0-2.83z' fill='%23fee2e2'/%3E%3Cpath d='M15 5l4 4-6 6-4-4 6-6z'/%3E%3Cline x1='2' y1='22' x2='22' y2='22'/%3E%3C/svg%3E") 4 20, crosshair;
+}
+
+/* --------------------------------------------------------------------------
+   HTML Nodes Layer & Cards
+   -------------------------------------------------------------------------- */
+.nodes-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.nodes-layer > * {
+    pointer-events: auto;
+}
+
+/* 1. Header Box (Dach / Reihenleitfrage) */
+.roof-card {
+    position: absolute;
+    top: 24px;
+    left: 50px;
+    width: 1380px;
+    background: var(--light-blue);
+    border: 1.5px solid var(--primary-blue);
+    border-radius: 6px;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+    z-index: 25;
+}
+
+.roof-question {
+    font-family: var(--font-serif);
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    letter-spacing: -0.01em;
+}
+
+.roof-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.roof-record-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.record-disc {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.record-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: none;
+    outline: none;
+}
+
+.record-year {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+/* 2. Pole Boxes (Die beiden anthropologischen Pole ohne Pol A / Pol B) */
+.pole-card {
+    position: absolute;
+    width: 660px;
+    height: 56px;
+    background: #ffffff;
+    border: 1.5px solid var(--primary-blue);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    z-index: 25;
+}
+
+.pole-left {
+    top: 114px;
+    left: 50px;
+}
+
+.pole-right {
+    top: 114px;
+    left: 770px;
+}
+
+.pole-title {
+    font-family: var(--font-sans);
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--primary-blue);
+    letter-spacing: 0.05em;
+    text-align: center;
+}
+
+/* 3. Thinker Station Cards (Mit viel Platz für Erkenntnis-Sicherung der SuS) */
+.thinker-card {
+    position: absolute;
+    width: 360px;
+    min-height: 175px;
+    background: #ffffff;
+    border: 1.4px solid var(--primary-blue);
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+    cursor: grab;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    z-index: 22;
+}
+
+.thinker-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: #1d4ed8;
+}
+
+.thinker-card.dragging {
+    cursor: grabbing;
+    box-shadow: var(--shadow-lg);
+    z-index: 35;
+    opacity: 0.96;
+}
+
+.thinker-card.target-candidate {
+    outline: 3px dashed #10b981;
+    background: #f0fdf4;
+}
+
+/* Obere Kopfzeile der Denkerkarte: Name + Porträt */
+.thinker-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.thinker-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.thinker-name {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.15;
+}
+
+.thinker-years {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.thinker-concept {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--primary-blue);
+    background: var(--light-blue);
+    padding: 2px 7px;
+    border-radius: 4px;
+    display: inline-block;
+    width: fit-content;
+    margin-top: 2px;
+}
+
+/* Porträt im einheitlichen Pop-Art Comic-Stil (ohne schwarzen Rahmen) */
+.portrait-wrapper {
+    width: 66px;
+    height: 66px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #ffffff;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.portrait-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: none;
+    outline: none;
+    display: block;
+    /* Zoomt leicht in das Bild hinein, damit der äußere schwarze Rahmen abgeschnitten wird */
+    transform: scale(1.16);
+}
+
+/* Unterer Bereich: Wichtigste Erkenntnis / Sicherungsfeld für SuS */
+.thinker-insight-box {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    padding: 6px 8px;
+}
+
+.insight-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.insight-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--primary-blue);
+}
+
+.insight-hint {
+    font-size: 0.65rem;
+    color: #94a3b8;
+}
+
+.thinker-insight-input {
+    width: 100%;
+    min-height: 52px;
+    max-height: 100px;
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    line-height: 1.35;
+    padding: 5px 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #0f172a;
+    resize: vertical;
+    outline: none;
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
+}
+
+.thinker-insight-input:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(20, 50, 100, 0.12);
+    background: #ffffff;
+}
+
+/* 4. Annotations: Sticky Notes */
+.note-card {
+    position: absolute;
+    width: 230px;
+    min-height: 95px;
+    background: #fef9c3;
+    border: 1px solid #facc15;
+    border-radius: 6px;
+    padding: 10px 12px;
+    box-shadow: var(--shadow-sm);
+    cursor: grab;
+    z-index: 21;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.note-card.dragging {
+    cursor: grabbing;
+    box-shadow: var(--shadow-lg);
+    z-index: 35;
+}
+
+.note-text {
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: #1e293b;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.note-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding-top: 4px;
+    border-top: 1px dashed rgba(0, 0, 0, 0.1);
+    font-size: 0.68rem;
+    color: #64748b;
+}
+
+.note-delete-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 2px 4px;
+}
+.note-delete-btn:hover {
+    color: #ef4444;
+}
+
+/* 5. Question Mark / Reflexionsmarker */
+.question-marker {
+    position: absolute;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    font-weight: 800;
+    box-shadow: 0 3px 8px rgba(59, 130, 246, 0.4);
+    cursor: grab;
+    z-index: 24;
+    border: 2px solid #ffffff;
+    transition: transform 0.15s ease;
+    touch-action: manipulation;
+}
+
+.question-marker:hover {
+    transform: scale(1.15);
+}
+
+.question-marker.dragging {
+    cursor: grabbing;
+    z-index: 36;
+}
+
+/* --------------------------------------------------------------------------
+   Modals & Dialogs
+   -------------------------------------------------------------------------- */
+.modal-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(3px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-backdrop.show {
+    display: flex;
+}
+
+.modal-dialog {
+    background: #ffffff;
+    border-radius: 12px;
+    width: 440px;
+    max-width: 92vw;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    padding: 24px;
+    border: 1px solid #e2e8f0;
+}
+
+.modal-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    margin-bottom: 14px;
+}
+
+.modal-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.modal-textarea,
+.modal-input {
+    width: 100%;
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    outline: none;
+    color: #0f172a;
+    user-select: text;
+    -webkit-user-select: text;
+}
+.modal-textarea:focus,
+.modal-input:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(20, 50, 100, 0.12);
+}
+
+.modal-help {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+.color-picker-row {
+    display: flex;
+    gap: 10px;
+}
+
+.color-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+    touch-action: manipulation;
+}
+.color-dot:hover {
+    transform: scale(1.1);
+}
+.color-dot.active {
+    box-shadow: 0 0 0 2.5px #0f172a;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+/* Toast Message */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1e293b;
+    color: #ffffff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
