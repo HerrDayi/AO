@@ -148,8 +148,60 @@
     const penSubtoolbar = document.getElementById('penSubtoolbar');
     const saveText = document.getElementById('saveText');
     const instructionText = document.getElementById('instructionText');
+    const canvasInstruction = document.getElementById('canvasInstruction');
+    const btnDismissInstruction = document.getElementById('btnDismissInstruction');
     const zoomLevelText = document.getElementById('zoomLevelText');
     const toast = document.getElementById('toast');
+
+    let instructionTimer = null;
+
+    function showInstruction(text, duration = 3500) {
+        if (!canvasInstruction || !instructionText) return;
+        instructionText.textContent = text;
+        canvasInstruction.classList.remove('hidden');
+        if (instructionTimer) clearTimeout(instructionTimer);
+        if (duration > 0) {
+            instructionTimer = setTimeout(() => {
+                canvasInstruction.classList.add('hidden');
+            }, duration);
+        }
+    }
+
+    function dismissInstruction() {
+        if (!canvasInstruction) return;
+        if (instructionTimer) clearTimeout(instructionTimer);
+        canvasInstruction.classList.add('hidden');
+    }
+
+    function setupInstructionBanner() {
+        if (!canvasInstruction) return;
+
+        if (btnDismissInstruction) {
+            btnDismissInstruction.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dismissInstruction();
+            });
+        }
+
+        // Klick auf die Hinweis-Leiste selbst schließt sie ebenfalls
+        canvasInstruction.addEventListener('click', () => {
+            dismissInstruction();
+        });
+
+        // Nach 6 Sekunden automatisch ausblenden
+        instructionTimer = setTimeout(() => {
+            dismissInstruction();
+        }, 6000);
+
+        // Klick/Touch auf den Arbeitsbereich blendet den Hinweis sofort aus
+        if (canvasViewport) {
+            canvasViewport.addEventListener('pointerdown', (e) => {
+                if (!e.target.closest('#canvasInstruction')) {
+                    dismissInstruction();
+                }
+            }, { passive: true });
+        }
+    }
 
     // Modals
     const noteModal = document.getElementById('noteModal');
@@ -192,6 +244,7 @@
         setupZoomControls();
         setupModals();
         setupPersistenceButtons();
+        setupInstructionBanner();
         renderCanvas();
         redrawAllDrawings();
         setupKeyboardShortcuts();
@@ -406,23 +459,25 @@
             if (activeTool !== 'select') return;
             if (e.target.closest('.thinker-insight-input') || e.target.closest('.note-delete-btn')) return;
 
+            dismissInstruction();
+
+            // Verhindere auf Touch/iPad, dass Safari den Touch als Scrollgeste der ganzen Seite kapert
+            if (e.cancelable) e.preventDefault();
+            e.stopPropagation();
+
             isDragging = true;
             el.classList.add('dragging');
             try { el.setPointerCapture(e.pointerId); } catch(err) {}
 
-            const clientX = e.clientX;
-            const clientY = e.clientY;
-
-            startX = clientX;
-            startY = clientY;
+            startX = e.clientX;
+            startY = e.clientY;
             origNodeX = dataObj.x;
             origNodeY = dataObj.y;
-
-            e.stopPropagation();
         }
 
         function onPointerMove(e) {
             if (!isDragging) return;
+            if (e.cancelable) e.preventDefault();
 
             const clientX = e.clientX;
             const clientY = e.clientY;
@@ -460,6 +515,11 @@
         el.addEventListener('pointermove', onPointerMove);
         el.addEventListener('pointerup', onPointerUp);
         el.addEventListener('pointercancel', onPointerUp);
+
+        // Touchmove auf dem Element blockieren, wenn aktiv gezogen wird
+        el.addEventListener('touchmove', (e) => {
+            if (isDragging && e.cancelable) e.preventDefault();
+        }, { passive: false });
     }
 
     // --- KLICK-HANDLING FÜR WERKZEUGE ---
@@ -1168,7 +1228,7 @@
             note: 'Notiz-Werkzeug: Klicke auf den Canvas, um ein eigenes Textkärtchen zu platzieren.',
             delete: 'Lösch-Modus: Klicke auf Pfeile, Notizen oder Symbole, um sie zu entfernen.'
         };
-        instructionText.textContent = instructions[toolName] || '';
+        showInstruction(instructions[toolName] || '', 3500);
     }
 
     // --- ZOOM & NAVIGATION ---
@@ -1177,15 +1237,93 @@
         const btnOut = document.getElementById('btnZoomOut');
         const btnFit = document.getElementById('btnZoomFit');
 
-        btnIn.addEventListener('click', () => setZoom(state.zoom + 0.1));
-        btnOut.addEventListener('click', () => setZoom(state.zoom - 0.1));
-        btnFit.addEventListener('click', () => fitCanvasToScreen());
+        if (btnIn) btnIn.addEventListener('click', () => setZoom(state.zoom + 0.1));
+        if (btnOut) btnOut.addEventListener('click', () => setZoom(state.zoom - 0.1));
+        if (btnFit) btnFit.addEventListener('click', () => fitCanvasToScreen());
+
+        // Verhindert, dass Safari beim 2-Finger-Pinch die Tab-Übersicht öffnet oder die ganze Webseite zoomt
+        ['gesturestart', 'gesturechange', 'gestureend'].forEach(type => {
+            document.addEventListener(type, (e) => {
+                e.preventDefault();
+            }, { passive: false });
+        });
+
+        // 2-Finger Pinch-Zoom & Pan für iPad / Touch-Screens
+        let touchPinchStartDist = 0;
+        let touchPinchStartZoom = 1;
+        let touchPinchStartCenter = { x: 0, y: 0 };
+        let touchPinchStartScroll = { left: 0, top: 0 };
+        let isPinching = false;
+
+        if (canvasViewport) {
+            canvasViewport.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    isPinching = true;
+                    dismissInstruction();
+                    const t0 = e.touches[0];
+                    const t1 = e.touches[1];
+                    touchPinchStartDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+                    touchPinchStartZoom = state.zoom || 1;
+                    touchPinchStartCenter = {
+                        x: (t0.clientX + t1.clientX) / 2,
+                        y: (t0.clientY + t1.clientY) / 2
+                    };
+                    touchPinchStartScroll = {
+                        left: canvasViewport.scrollLeft,
+                        top: canvasViewport.scrollTop
+                    };
+                    if (canvasBoard) canvasBoard.style.transition = 'none';
+                    if (e.cancelable) e.preventDefault();
+                }
+            }, { passive: false });
+
+            canvasViewport.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2 && isPinching) {
+                    if (e.cancelable) e.preventDefault();
+                    const t0 = e.touches[0];
+                    const t1 = e.touches[1];
+                    const currentDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+                    if (touchPinchStartDist > 0) {
+                        const scaleFactor = currentDist / touchPinchStartDist;
+                        const newZoom = Math.max(0.35, Math.min(1.5, touchPinchStartZoom * scaleFactor));
+                        setZoom(newZoom, true);
+
+                        // 2-Finger Verschieben (Pan)
+                        const currentCenter = {
+                            x: (t0.clientX + t1.clientX) / 2,
+                            y: (t0.clientY + t1.clientY) / 2
+                        };
+                        const dx = currentCenter.x - touchPinchStartCenter.x;
+                        const dy = currentCenter.y - touchPinchStartCenter.y;
+                        canvasViewport.scrollLeft = touchPinchStartScroll.left - dx;
+                        canvasViewport.scrollTop = touchPinchStartScroll.top - dy;
+                    }
+                }
+            }, { passive: false });
+
+            const finishPinch = () => {
+                if (isPinching) {
+                    isPinching = false;
+                    touchPinchStartDist = 0;
+                    if (canvasBoard) canvasBoard.style.transition = 'transform 0.1s ease-out';
+                    saveToStorage();
+                }
+            };
+            canvasViewport.addEventListener('touchend', (e) => {
+                if (e.touches.length < 2) finishPinch();
+            });
+            canvasViewport.addEventListener('touchcancel', finishPinch);
+        }
     }
 
-    function setZoom(val) {
-        state.zoom = Math.max(0.4, Math.min(1.5, Math.round(val * 10) / 10));
+    function setZoom(val, smooth = false) {
+        if (smooth) {
+            state.zoom = Math.max(0.35, Math.min(1.5, Math.round(val * 100) / 100));
+        } else {
+            state.zoom = Math.max(0.4, Math.min(1.5, Math.round(val * 10) / 10));
+        }
         applyZoom();
-        saveToStorage();
+        if (!smooth) saveToStorage();
     }
 
     function applyZoom() {
