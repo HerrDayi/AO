@@ -249,6 +249,13 @@
         redrawAllDrawings();
         setupKeyboardShortcuts();
         updateSaveIndicator(new Date());
+
+        // Verhindert, dass Mobile Safari die Kopfzeile nach oben wegscrollt
+        window.addEventListener('scroll', () => {
+            if (window.scrollY !== 0 || window.scrollX !== 0) {
+                window.scrollTo(0, 0);
+            }
+        }, { passive: true });
     }
 
     // --- STORAGE & PERSISTENZ (AUTOMATISCHES SPEICHERN ÜBER WOCHEN) ---
@@ -288,8 +295,8 @@
 
     function updateSaveIndicator(date) {
         if (!saveText) return;
-        const timeStr = date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        saveText.textContent = `Gespeichert (${timeStr} Uhr)`;
+        const timeStr = date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+        saveText.textContent = `Gespeichert (${timeStr})`;
     }
 
     function showToast(msg) {
@@ -488,9 +495,9 @@
             let newX = Math.round(origNodeX + dx);
             let newY = Math.round(origNodeY + dy);
 
-            // Canvas Bounds (1480x1100)
-            newX = Math.max(10, Math.min(1480 - (dataObj.w || 40), newX));
-            newY = Math.max(10, Math.min(1100 - (dataObj.h || 40), newY));
+            // Canvas Bounds (3200x2400)
+            newX = Math.max(10, Math.min(3200 - (dataObj.w || 40), newX));
+            newY = Math.max(10, Math.min(2400 - (dataObj.h || 40), newY));
 
             dataObj.x = newX;
             dataObj.y = newY;
@@ -1549,11 +1556,22 @@
     function exportCanvasAsImage() {
         showToast('Erstelle Bildexport...');
 
+        let maxX = 1480;
+        let maxY = 1100;
+        state.nodes.forEach(n => {
+            maxX = Math.max(maxX, (n.x || 0) + (n.w || 360) + 50);
+            maxY = Math.max(maxY, (n.y || 0) + (n.h || 175) + 50);
+        });
+        state.annotations.forEach(a => {
+            maxX = Math.max(maxX, (a.x || 0) + (a.w || 230) + 50);
+            maxY = Math.max(maxY, (a.y || 0) + (a.h || 100) + 50);
+        });
+        const width = Math.min(3200, Math.max(1480, Math.round(maxX)));
+        const height = Math.min(2400, Math.max(1100, Math.round(maxY)));
+        const scale = 2;
+
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        const width = 1480;
-        const height = 1100;
-        const scale = 2;
 
         canvas.width = width * scale;
         canvas.height = height * scale;

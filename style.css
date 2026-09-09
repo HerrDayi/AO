@@ -26,16 +26,26 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+}
+
 body {
     font-family: var(--font-sans);
-    background-color: var(--bg-page);
+    background-color: #ffffff;
     color: var(--text-main);
-    overflow: hidden;
-    height: 100vh;
-    width: 100vw;
     user-select: none;
     -webkit-user-select: none;
-    touch-action: manipulation;
 }
 
 /* --------------------------------------------------------------------------
@@ -44,26 +54,32 @@ body {
 .app-layout {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100%;
+    height: 100dvh;
     width: 100vw;
     position: relative;
+    overflow: hidden;
 }
 
 /* Header */
 .app-header {
-    height: 52px;
+    height: 50px;
     background: #ffffff;
     border-bottom: 1px solid #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
-    z-index: 50;
+    padding: 0 14px;
+    z-index: 100;
     box-shadow: var(--shadow-sm);
     flex-shrink: 0;
-    gap: 10px;
+    gap: 8px;
     overflow: hidden;
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
 }
 
 .header-left {
@@ -404,20 +420,21 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Canvas Viewport & Canvas Board (1480px x 1100px)
+   Canvas Viewport & Canvas Board (Unendlich weiß & nahtlos)
    -------------------------------------------------------------------------- */
 .canvas-viewport {
     flex: 1;
     position: relative;
     overflow: auto;
-    background: #eef2f6;
+    background-color: #ffffff;
     background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
-    background-size: 24px 24px;
+    background-size: 28px 28px;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: flex-start;
-    padding: 24px;
+    padding: 20px 40px 60px 20px;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y pinch-zoom;
 }
 
 .canvas-instruction {
@@ -476,14 +493,16 @@ body {
 
 .canvas-board {
     position: relative;
-    width: 1480px;
-    height: 1100px;
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: var(--shadow-md);
-    transform-origin: center top;
+    width: 3200px;
+    min-width: 3200px;
+    height: 2400px;
+    min-height: 2400px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    transform-origin: 0 0;
     transition: transform 0.1s ease-out;
-    border: 1px solid #e2e8f0;
 }
 
 /* SVG Connections Layer */
@@ -1113,7 +1132,7 @@ body {
         display: none;
     }
     .btn {
-        padding: 5px 9px;
+        padding: 5px 8px;
         font-size: 0.78rem;
     }
     .save-status {
@@ -1124,7 +1143,7 @@ body {
 @media (max-width: 1040px) {
     .app-header {
         padding: 0 10px;
-        gap: 8px;
+        gap: 6px;
     }
     .badge {
         font-size: 0.72rem;
@@ -1136,27 +1155,18 @@ body {
     .header-center .main-title {
         font-size: 0.88rem;
     }
-    .save-label {
-        display: none;
-    }
     .btn {
-        padding: 5px 8px;
-        font-size: 0.75rem;
-    }
-    .btn-text {
-        display: inline;
+        padding: 5px 7px;
+        font-size: 0.74rem;
     }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 850px) {
     .header-center {
         display: none;
     }
-    .btn-text {
+    .instructor {
         display: none;
-    }
-    .btn {
-        padding: 6px 9px;
     }
 }
 

@@ -36,23 +36,23 @@
                 <!-- Export & Persistence Actions -->
                 <button id="btnExportJson" class="btn btn-secondary" title="Arbeitsstand als Datei sichern (z. B. für Schul-PC oder iPad)">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    <span class="btn-text">Stand sichern</span>
+                    <span class="btn-text">Sichern</span>
                 </button>
 
                 <label for="importJsonFile" class="btn btn-secondary" title="Gespeicherten Stand von Datei laden">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                    <span class="btn-text">Stand laden</span>
+                    <span class="btn-text">Laden</span>
                 </label>
                 <input type="file" id="importJsonFile" accept=".json" style="display: none;">
 
                 <button id="btnExportImage" class="btn btn-secondary" title="Als Bild (PNG) für Portfolio oder Lehrkraft speichern">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                    <span class="btn-text">Bild exportieren</span>
+                    <span class="btn-text">Export</span>
                 </button>
 
                 <button id="btnReset" class="btn btn-ghost" title="Auf den ursprünglichen Zustand zurücksetzen">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-                    <span class="btn-text">Zurücksetzen</span>
+                    <span class="btn-text">Reset</span>
                 </button>
             </div>
         </header>
@@ -176,7 +176,7 @@
                 </svg>
 
                 <!-- Freihand-Zeichenfläche für Apple Pencil / Stift-Nutzung auf dem iPad -->
-                <canvas class="drawings-layer" id="drawingsCanvas" width="1480" height="1100"></canvas>
+                <canvas class="drawings-layer" id="drawingsCanvas" width="3200" height="2400"></canvas>
 
                 <!-- HTML Nodes Layer -->
                 <div class="nodes-layer" id="nodesLayer">
